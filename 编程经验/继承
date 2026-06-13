@@ -1,0 +1,118 @@
+### 继承这个概念
+假如有这么个需求，我们需要柱状一台电脑
+最基本但是一定能实现的方法就是，定义了50个对象，每个对象都定义了属性，有的属性是单独的 ，比如他厌食不喜欢蔬菜，另一个人有先天性疾病，这种情况下实现方式比如：
+class harddisk:
+    disk_list={}
+    def __init__(self,name,size):
+        self.name=name
+        self.size=size
+        harddisk.disk_list[name]=size
+
+    def insertNewDisk(name,size):
+        self.name=name
+        self.size=size
+        if name in disk_list:
+          raise Error(
+              print('name already exists')
+          )
+        harddisk.disk_list[name]=size
+
+    def removeNewDisk(name,size):
+        self.name=name
+        self.size=size
+        if name in disk_list:
+            del disk_list[name]
+        else:
+            raise Error(
+                print('name not existing')
+            )
+Class Memory:
+......
+内容同上面hardisk类似
+
+
+class Computer(harddisk,Memory):
+  def __init__(self,hddname,memname,hddsize,memsize):
+      harddisk.__init__(self,hddname,hddsize)
+      Memory.__init__(self,memname,memsize)
+
+  def addsomething():
+    self.insertNewDisk(name,size)
+
+继承会把父类的属性和方法都学习下来，比如我一个电脑类，一定要有硬盘和内存，我继承他们时候我需要实现这些方法，比如继承了硬盘，你需要初始化硬盘的列表。 之后你就可以直接调用这些父类的方法，好处是你定义一个硬盘标准（方法），你需要创建很多电脑实例，你创建的时候都去继承这个硬盘的标准并照着实现即可。
+要不你每次新建都需要在定义一次硬盘和方法，如果又一次你定义错了名字或者方法名，导致每个实例之间不兼容就麻烦了，这里指的是每个电脑实例，如果是继承，我每次删掉硬盘我只需要固定调用一个固定名字的方法(removedisk), 但是如果你妹继承自己定义定义错了名字了比如remdisk，那么我默认去调用removedisk就会失败，造成连锁问题。
+
+python也有抽象类
+
+Class CD-rom():
+   @abstractmethod
+   def interfaceType(self):
+     pass
+
+   def readCD(self):
+     #dosomething
+     pass
+
+抽象类包含很多定义好名字 但是没有具体实现的方法，更多是一个标准，比如上面例子，读盘的方法是固定的，但是光驱可以是usb可以是stat， 那么我们抽象方法就是说你必须有个接口让电脑能连接，什么接口你自己定义就好。
+computer在继承光驱的时候，需要实现这个抽象方法，告知具体的接口类型：
+
+class Computer(harddisk,Memory,CD-rom):
+  def __init__(self,hddname,memname,hddsize,memsize):
+      harddisk.__init__(self,hddname,hddsize)
+      Memory.__init__(self,memname,memsize)
+
+  def interfaceType(self):
+    self.type='sata'
+
+java 再抽象类方面跟python一致，但是java多一个概念是接口
+接口只定义方法不实现,可以一次继承多个接口但是只能单继承抽象类. python到是可以继承多个抽象类.
+
+从技术角度看，java完全可以做一次多继承，但是java的设计理念是担心当一次继承2个抽象，且2个抽象有同名方法时，没法很好的解决这个问题，于是直接放弃了这个实现。这个概念叫做菱形继承
+              harddisk
+computer A              computer B
+             server X
+电脑A和B都继承了硬盘，并且重写了硬盘的新建方法，这时候服务器X继承电脑A B 该用哪个硬盘的新建方法呢？
+java为了防止这个问题直接放弃了多继承
+            
+python 使用了一个概念叫做C3 MRO
+即他再多继承的时候记录了一个顺序，比如上文中档server x多继承时候，你会选择A 和B哪个放在前面， 假如 server X (A B),python默认子类方法优先
+则继承的时候的顺序会是 server X->A->B-> harddisk.
+当我们调用insertdisk， 他会按照这个顺序寻找这个方法，正常应该会在A里面就找到，之后就停止了， B虽然也存在但是永远不会被调用。从而解决了多继承问题。
+
+TBD: C3 合并算法
+
+这里还有个原因是java在编译时保证了绝对安全， python为了灵活性可以动态运行时候确定的，而不是在编译时候确定的，这时候开发者必须清楚C3的逻辑，因为C3也会有无法处理的情况，比如
+class B(A): pass
+class C(B): pass
+class D(A, C): pass
+
+-----------------
+class X: pass
+class Y: pass
+class A(X, Y): pass
+class B(Y, X): pass
+class C(A, B): pass   # 错误
+
+### mixin
+python做了这么多，实际上为了实现一些场景，比如mixin:
+
+class rgb:
+  def lightRgb(self):
+      return self.RGP.ON
+
+
+class restart:
+  def quickRestart(self):
+      return restart.start()
+设计是一个类是一个特性，
+之后computer类可以单独灵活的实现这些特性。 但是更多是概念性的，因为rgb和restart本质也是普通python类，更多是约定上快速添加一个功能，继承更多是完整实现一个功能。
+mixin没有init，针对一个灵活的功能。
+
+或者mock测试
+python
+def test_something():
+    MyClass.__bases__ = (MockBase,)   # 测试时替换基类
+    obj = MyClass()
+    # 使用 mock 行为
+
+
