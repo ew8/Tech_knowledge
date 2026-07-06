@@ -1,0 +1,52 @@
+python有一个概念叫做鸭子类型，原文：
+如果它走起路来像鸭子，叫起来也像鸭子，那么它就是鸭子
+在代码中，它不关心对象是什么类，只关心对象有没有特定的方法或属性
+
+class Duck:
+    def quack(self):
+        print("嘎嘎嘎")
+
+class Person:
+    def quack(self):
+        print("我在学鸭子叫！")
+
+def make_it_quack(obj):
+    obj.quack()
+
+make_it_quack(Duck())   
+make_it_quack(Person())
+
+
+乍一看很像java的接口，即我定义了一个实现需要的方法， 怎么实现你自行定义，但是你必须实现我定义的方法。
+
+区别是python在运行前不会做检查，比如：
+class computer:
+    def boom(self):
+        print("机箱炸了")
+
+def make_it_quack(obj):
+    obj.quack()
+
+make_it_quack(computer())  
+
+这个你在运行的时候会报错，因为computer并没有quack方法，这也是python的一个问题，即很多方法需要开发者自行约束，代码在运行到这之前不会显示提醒你，很多问题可能在生产中暴露，或者在代码运行测试期间才会暴露，比如上面的例子。
+
+而java是强约定，他在编译时候就会检查这个computer有没有quack
+
+interface Quackable {
+    void quack();
+}
+
+class Person implements Quackable {
+    public void quack() { System.out.println("我在学鸭子叫"); }
+}
+class computer implements Quackable {
+    public void boom() { System.out.println("机箱炸了"); }
+}
+
+public void makeItQuack(Quackable obj) { // 必须明确实现该接口
+    obj.quack();
+}
+
+
+上面的例子在编译或者IDE中就会直接报错，因为computer没有实现quackable的方法。
