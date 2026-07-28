@@ -1,5 +1,5 @@
 本文档记录了搭建一个网页系统业务对话式agent的搭建记录:  
-
+阶段1：
 1.一开始跟AI聊了需求，AI的建议是先用本地代码做对话，即通过匹配关键字，使用计分制判断本地资料库与这个问题匹配度，从而回答这个问题。因为是AI的推荐，为了搞清他推荐得原因和原理，于是让他生成了个初版看看效果。  
       结果：  
       经常性答非所问，或者过度回答。 比如我问关键词你们公司防火墙项目主要是做什么的，回答：我们防火墙业务是xxx（正确回答），之后接了个无关意义的关系，例：防火墙业务是用xxxx。分布式框架的业务是用来xxxx。
@@ -41,4 +41,40 @@
     3.通过Mutation框架强化变更路径  
     4.强化意图路由  
     什么乱七八糟的，我的仔细研究研究这些新的名词，不过我远端服务器跳闸断电了，管理员（伪）觉得断电了不适合上班吧服务器启动就跑路了，殊不知虚拟机没设置上电自启，于是乎剩下的明天再看吧。
-    
+
+
+阶段2：
+那天晚上思来想去还是觉得这个Agent并不是我期待的智能化，如果什么都通过知识库，只有生成SQL等才去远端那跟本地一堆ifelse有撒谎区别呢，于是跟群里大佬探讨了下， 跟chaleaoch和wiloon一顿激情探讨后，最后给我share了一个link：
+https://www.anthropic.com/engineering/building-effective-agents
+里面有句话我觉得到时点醒了我:
+
+What are agents?
+"Agent" can be defined in several ways. Some customers define agents as fully autonomous systems that operate independently over extended periods, using various tools to accomplish complex tasks. Others use the term to describe more prescriptive implementations that follow predefined workflows. At Anthropic, we categorize all these variations as agentic systems, but draw an important architectural distinction between workflows and agents:
+
+**Workflows** are systems where LLMs and tools are orchestrated through predefined code paths.
+**Agents**, on the other hand, are systems where LLMs dynamically direct their own processes and tool usage, maintaining control over how they accomplish tasks.
+
+Below, we will explore both types of agentic systems in detail. In Appendix 1 (“Agents in Practice”), we describe two domains where customers have found particular value in using these kinds of systems.
+
+我的需求是不想死板的定义一堆ifelse，而是给一些关键词，AI根据关键词做自行判断，这样本地hardcode部分少，虽然可能会引起一定的幻觉，但是这个可以之后慢慢限制词处理。但是这样做之前做的就都应该定义为workflows，即代码引导到不同分支，
+这并不是我一开始想做的，我怀疑是一开始给的限制条件如希望减少token消耗，数据本地不出环境导致的。不过已有的部分我打算先保留，之后下一部分业务试试纯Agent开发方向。即通过LLM动态的分析自然语言，找到目标业务，再继续往下执行,一次一个任务
+，自己思考，调用，思考。
+方向定好后，那么应该是逃不掉langGraph了，架构就变成了：
+LangGraph 负责调度
+  → chatbot 节点：用 LangChain 调 LLM，让模型自己选工具
+  → tools 节点：用 LangChain 的 ToolNode 执行模型选中的工具
+  → 再回到 chatbot …
+
+由此又带出来一个新的关键词：ReAct /tool-calling Agent，他俩到是我之前想要的那种Agent的具体体现:
+ReAct,即Reason(think how) +Action(use toole/do sth) 它是一种思维方式
+Tool-calling Agent则是把这个思维方式落地的方法： 
+用户消息
+  → LLM（已 bind_tools，知道有哪些工具）
+  → 若返回 tool_calls：执行工具，把结果写成 ToolMessage
+  → 再喂给 LLM
+  → 直到 LLM 只返回普通文本（不再要工具）→ 最终答案
+
+挺好，这么下来至少是串起来了，而且符合我的预期，使用的技术和设计方案也是我预期的，看一下效果：
+
+<img width="519" height="901" alt="image" src="https://github.com/user-attachments/assets/50a45a31-e9b8-45d4-94b3-82e99eeac2d7" />
+
