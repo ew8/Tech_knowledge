@@ -78,3 +78,39 @@ Tool-calling Agent则是把这个思维方式落地的方法：
 
 <img width="519" height="901" alt="image" src="https://github.com/user-attachments/assets/50a45a31-e9b8-45d4-94b3-82e99eeac2d7" />
 
+这样下来为了做这个Agent整个项目的改动有：
+新的python项目（Agent文件夹）:
+  →FastAPI,提供restapi接口允许Java调用LLM等
+  →LangChain:
+    →tools.py 定义了agent的可以获得哪种能力，我觉得就是大家一直说的agent有哪些skills，比如我之前强调了不允许agent直接读数据库或者写库，所以目录下有一个定义就是当需要查询时候，调用XXX方法，我看了下方法就是调用了spring的api
+    来查询数据库，从而规避一些问题,使得对数据库的操作都受控。
+    →消息结构：SystemMessage、HumanMessage、AIMessage、ToolMessage, 主要记录一次 Agent 运行中的对话状态，最后组装成一起发给大模型,包括系统规则，用户输入，模型输入（包括答案和tool call），工具执行结果
+    →统一大模型封装, langchain_openai.ChatOpenAI, 这没啥好说的，统一接口
+    →Tool Calling / Function Calling， 给AI注册有哪些工具（skill），这里bind_tools就是上面tools.py里面定义的功能
+  →LangGraph： 没有用太多高技术含量的东西,主要是状态机任务编排，循环（即是否需要下一步，是否需要调用tool，还是答案以足够结束循环）
+    → StateGraph 定义 Agent 执行流程
+    → ToolNode 执行模型发起的工具调用
+    → START/END 控制流程开始结束
+    → 条件边判断模型是否还需要继续调用工具
+    → collect 节点收集工具 evidence
+
+旧的Spring项目（前后端混合）,总结一下主要是负责安全和提供接口，在加上前端页面:
+  → 新增一个agent页面
+  → 代理服务，调用python的agent的接口,传递用户的信息
+  → 暴露了一些API，比如读写DB，目的是允许agent根据判断执行一些功能，又担心agent权限过高，于是用接口的方式使得这部分可控
+  → 鉴权，禁止用户直接使用Agent API，通过每次请求带上特定key来允许调用。
+  → Agent权限配置等
+  → 增加了一些业务的信息和MD，因为一开始agent做的是工作流模式，他依赖本地文档，这部分保留因为针对某个业务，MD文件足够丰富，足够驱动一些问题答案，如果不够还有LLM兜底，变相节省token。但是本地信息也容易出现误导导致的错误直接返回
+  结果而不通过LLM二次判断。这个需要考虑下怎么处理。
+  → api-registry.yml注册表 集中统一记录了当需要增啥改查时候需要的信息，内部定义了每一个业务的名称，该名称下有关键词create/update/delete，这样代码只需要确定业务和操作，直接读取对应关键词下的内容操作即可，否则需要写大量的IF/else
+  来驱动不同业务的增删改该怎么操作。示例如图:
+  <img width="203" height="520" alt="image" src="https://github.com/user-attachments/assets/52c97717-6fc9-49f9-8391-e87278c3980a" />
+
+  
+另：
+  LangChain有几个我知道比较著名但是没用上的功能：
+  1.LangChain Memory 上下文记忆，这里AI自己写了个小的记忆体，给出的解释是业务过于简单，没必要上这么重的上下文监控,不需要复杂的上下文记忆。 这个的确是我限制的，因为业务主要是快速分析生成报表结论什么的，不需要记昨天甚至上周的内容。
+  2.本地向量数据库，同上，内容和业务没有那么复杂， 简单的MD足以，硬上向量除了多一个服务没啥优势。
+
+  
+
