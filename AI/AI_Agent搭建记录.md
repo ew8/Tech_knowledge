@@ -59,18 +59,18 @@ Below, we will explore both types of agentic systems in detail. In Appendix 1 (�
 ，自己思考，调用，思考。  
 方向定好后，那么应该是逃不掉langGraph了，架构就变成了：  
 LangGraph 负责调度  
-  → chatbot 节点：用 LangChain 调 LLM，让模型自己选工具  
-  → tools 节点：用 LangChain 的 ToolNode 执行模型选中的工具  
-  → 再回到 chatbot …  
+  - chatbot 节点：用 LangChain 调 LLM，让模型自己选工具  
+  - tools 节点：用 LangChain 的 ToolNode 执行模型选中的工具  
+  - 再回到 chatbot …  
 
 由此又带出来一个新的关键词：ReAct /tool-calling Agent，他俩到是我之前想要的那种Agent的具体体现:  
 ReAct,即Reason(think how) +Action(use toole/do sth) 它是一种思维方式  
 Tool-calling Agent则是把这个思维方式落地的方法：   
 用户消息  
-  → LLM（已 bind_tools，知道有哪些工具）  
-  → 若返回 tool_calls：执行工具，把结果写成 ToolMessage  
-  → 再喂给 LLM  
-  → 直到 LLM 只返回普通文本（不再要工具）→ 最终答案  
+  - LLM（已 bind_tools，知道有哪些工具）  
+  - 若返回 tool_calls：执行工具，把结果写成 ToolMessage  
+  - 再喂给 LLM  
+  - 直到 LLM 只返回普通文本（不再要工具）→ 最终答案  
 
 挺好，这么下来至少是串起来了，而且符合我的预期，使用的技术和设计方案也是我预期的，看一下效果：  
 
