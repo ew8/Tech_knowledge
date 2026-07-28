@@ -78,7 +78,7 @@ Tool-calling Agent则是把这个思维方式落地的方法：
 
 这样下来为了做这个Agent整个项目的改动有：  
 新的python项目（Agent文件夹）:  
-  - 无序列表项无序列表项FastAPI,提供restapi接口允许Java调用LLM等  
+  - FastAPI,提供restapi接口允许Java调用LLM等  
   - LangChain:  
     - tools.py 定义了agent的可以获得哪种能力，我觉得就是大家一直说的agent有哪些skills，比如我之前强调了不允许agent直接读数据库或者写库，所以目录下有一个定义就是当需要查询时候，调用XXX方法，我看了下方法就是调用了spring的api
     来查询数据库，从而规避一些问题,使得对数据库的操作都受控。  
