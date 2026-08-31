@@ -64,3 +64,8 @@ DNS服务商没见过这个域名，他就会去上一层继续问，直到最�
 
 不过这里你会看到cloudflare帮我们做了一次隐藏，包括域名和IP。这样别人攻击你的网站就比较困难找到你的根网站，而且可以防范一定量的DDNS攻击。 如果你把github那部分换成你家自己的域名或者IP，这样就为个人网站用户提供了很大的安全防护作用。
 
+最后我们用nslookup看一下效果：
+这4个IP全是cloudflare的.
+<img width="1089" height="626" alt="image" src="https://github.com/user-attachments/assets/6b1639c5-858f-492e-9560-752278cc5871" />
+
+
