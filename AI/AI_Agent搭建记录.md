@@ -44,7 +44,7 @@
 
 
 ## 阶段2：
-那天晚上思来想去还是觉得这个Agent并不是我期待的智能化，如果什么都通过知识库，只有生成SQL等才去远端那跟本地一堆ifelse有撒谎区别呢，于是跟群里大佬探讨了下， 跟[chaleaoch](https://chaleaoch.com)和wiloon一顿激情探讨后，最后给我share了一个link：  
+那天晚上思来想去还是觉得这个Agent并不是我期待的智能化，如果什么都通过知识库，只有生成SQL等才去远端那跟本地一堆ifelse有撒谎区别呢，于是跟群里大佬探讨了下， 跟[chaleaoch](https://chaleaoch.com)和[wiloon](https://wiloon.com)一顿激情探讨后，最后给我share了一个link：  
 https://www.anthropic.com/engineering/building-effective-agents  
 里面有句话我觉得到时点醒了我:  
 
