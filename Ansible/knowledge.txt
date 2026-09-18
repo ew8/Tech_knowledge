@@ -1,0 +1,74 @@
+overall:
+
+Ansible是一个通过yaml可以安全并且可重复的将已有的步骤或者应用自动部署到无数的服务器上。
+举一个例子，我们现在有100个新上的虚拟机，我们要给每一个虚拟机安装监控软件，我们可能的操作是:
+最基本的：收集所有IP，一个个登录并且安装。
+好一点的：收集所有IP，通过ssh发送远程命令安装。
+晋级：写成sh脚本执行上面操作。
+但是不管怎么，都需要把这个命令手写100遍并想办法执行，非常的臃肿。
+有了ansible之后，我们需要再host文件夹定义好你所有的机器ip，支持使用范围IP，比如：
+[webservers]
+192.168.5.[1:100]
+or:
+web[1:100] ansible_host=192.168.5.[1:100]
+之后你需要按照他的格式，定义好如何安装这个软件，剩下的他会自动帮你处理好。
+
+entrypoint:
+Ansible执行时会最先找ansible.cfg，从当前目录到遍历每一个子目录，找到第一个后会加载并停止继续寻找。
+里面包含以下重要信息
+[defaults]
+inventory = ./inventory/hosts.ini    # 主机清单，哪些机器需要被连接并操作
+roles_path = ./roles                 # role 查找路径 role是具体操作的事项
+log_path = ./ansible.log             # 执行log
+
+[privilege_escalation]
+become = True                        # 提权 如果ssh的不是root账户需要，反之则可以删除这部分
+become_method = sudo
+become_user = root
+
+[defaults]
+forks = 20                           # 并发数
+host_key_checking = False            # 关掉 SSH 首次确认，避免卡住
+remote_user = root                   # 默认登录用户，省得写 ansible_user
+timeout = 30                         # 连接超时
+
+[ssh_connection]
+pipelining = True                    # 这里解释下，正常情况我们做这些操作需要多个ssh命令，从上传，到逐个命令执行，需要多个ssh开销，当这里改成true后，ansible会将指令一次发送给python解析器从而节省ssh开销。但是对老旧的机器支持不好（sudo提权需要真实终端）
+
+
+当ansible找到cfg后，他回去寻找inventory文件并且获取我们主机列表和账户名密码。
+[all]
+test-1 ansible_host=172.17.0.5
+test-2 ansible_host=172.17.0.6
+test-3 ansible_host=172.17.0.7
+
+[web]
+test-1
+test-2
+
+[lb]
+test-3
+
+这里要补充一下，执行一个ansible的典型命令是ansible-playbook xxxx
+当你执行后，ansible找到cfg的下一部是到根目录寻找xxxx.yml,以获取你要做的事情，如果找不到这个文件或者没写会直接报错退出。
+这里我们以test.yml为例：ansible-playbook test
+这时候ansible就会寻找text.yml并且读取，一般包含以下信息：
+
+---
+- name: config common setup #任务名字
+  hosts: all  #生效主机组
+  become: true  #是否提权，如果是root这里可以不写
+#不收集基础信息
+  gather_facts: false
+#stop if any error
+  any_errors_fatal: true
+#vars 
+  vars_files:
+    - vars.yml  #如果执行过程中有变量，会去这个文件找
+  roles:
+    - common_setup  #去roles文件夹找操作目录的名称
+  tags: basic #标签 方便具体执行某一个指令
+
+有了这些后，下一步就是去roles文件夹寻找具体的指令并执行了。
+
+
