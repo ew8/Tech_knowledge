@@ -1,0 +1,28 @@
+---
+- name: Configure time synchronization
+  hosts: all
+  become: true
+  gather_facts: true
+  roles:
+    - role: common_setup
+      tags:
+        - basic
+        - time
+
+- name: Deploy nginx web nodes
+  hosts: web
+  become: true
+  gather_facts: true
+  roles:
+    - role: web
+      tags:
+        - web
+
+- name: Deploy nginx load balancer
+  hosts: lb
+  become: true
+  gather_facts: true
+  roles:
+    - role: lb
+      tags:
+        - lb

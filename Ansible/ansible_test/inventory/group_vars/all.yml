@@ -1,0 +1,4 @@
+ansible_user: root
+ansible_password: ew8qqew8
+ansible_port: 22
+system_timezone: Asia/Shanghai

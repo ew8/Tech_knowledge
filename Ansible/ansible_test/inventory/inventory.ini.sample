@@ -1,0 +1,13 @@
+[all]
+test-1 ansible_host=10.66.59.186 ansible_ssh_port='22' ansible_ssh_user='root' ansible_ssh_pass='Cisco@123'
+test-2 ansible_host=10.66.59.187 ansible_ssh_port='22' ansible_ssh_user='root' ansible_ssh_pass='Cisco@123'
+test-3 ansible_host=10.66.59.188 ansible_ssh_port='22' ansible_ssh_user='root' ansible_ssh_pass='Cisco@123'
+
+[web]
+test-1
+test-2
+
+[lb]
+test-3
+
+

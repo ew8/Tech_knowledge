@@ -1,0 +1,50 @@
+---
+- name: Refresh package cache on RedHat-family hosts
+  ansible.builtin.dnf:
+    update_cache: true
+  when: ansible_facts.os_family == 'RedHat'
+
+- name: Refresh package cache on Debian-family hosts
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+  when: ansible_facts.os_family == 'Debian'
+
+- name: Install nginx
+  ansible.builtin.package:
+    name: nginx
+    state: present
+
+- name: Remove distribution default nginx site
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop: "{{ nginx_default_site_paths }}"
+
+- name: Ensure nginx configuration directory exists
+  ansible.builtin.file:
+    path: "{{ nginx_config_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Deploy nginx load balancer configuration
+  ansible.builtin.template:
+    src: nginx_lb.conf.j2
+    dest: "{{ nginx_config_dir }}/lb.conf"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload nginx
+
+- name: Validate nginx configuration
+  ansible.builtin.command:
+    cmd: nginx -t
+  changed_when: false
+
+- name: Enable and start nginx
+  ansible.builtin.service:
+    name: "{{ nginx_service_name }}"
+    state: started
+    enabled: true
